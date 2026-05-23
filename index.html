@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>YouTube Downloader</title>
 
   <style>
@@ -41,7 +41,8 @@
       letter-spacing: 1px;
     }
 
-    input, select {
+    input,
+    select {
       width: 100%;
       padding: 12px;
       margin: 10px 0;
@@ -86,7 +87,8 @@
       font-size: 14px;
       opacity: 0.9;
     }
-    .nametag{
+
+    .nametag {
       font-size: 14px;
       color: gray;
       position: absolute;
@@ -126,33 +128,46 @@
   <div class="nametag">Made by Wenxyz</div>
 
   <script>
-    async function download() {
-      const url = document.getElementById("url").value;
-      const type = document.getElementById("type").value;
+    import path from "path";
+import fs from "fs";
 
-      document.getElementById("status").innerText =
-        "Downloading... please wait ⏳";
+app.post("/download", async (req, res) => {
+    const { url, type } = req.body;
 
-      try {
-        const res = await fetch("http://localhost:3000/download", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url, type })
+    try {
+        const filePath = `downloads/output.${type}`;
+
+        let options = {
+            output: filePath
+        };
+
+        if (type === "mp3") {
+            options.extractAudio = true;
+            options.audioFormat = "mp3";
+        } else {
+            options.format = "best";
+        }
+
+        await ytdlp(url, options);
+
+        // 🔥 SEND FILE BACK
+        res.download(filePath, (err) => {
+            if (err) {
+                console.log(err);
+            }
+
+            // optional delete after download
+            fs.unlinkSync(filePath);
         });
 
-        const data = await res.json();
-
-        document.getElementById("status").innerText =
-          data.success
-            ? "Download complete! Check server folder 📁"
-            : data.error;
-
-      } catch (err) {
-        document.getElementById("status").innerText =
-          "Server not responding ❌";
-      }
+    } catch (err) {
+        res.status(500).json({
+            error: "Download failed"
+        });
     }
+});
   </script>
 
 </body>
+
 </html>
