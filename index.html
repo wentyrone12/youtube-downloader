@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>YouTube Downloader</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #0d0d0d, #000);
+      color: #00ff88;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 420px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+      border-radius: 16px;
+      padding: 25px;
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.2);
+      text-align: center;
+      backdrop-filter: blur(10px);
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      font-size: 24px;
+      letter-spacing: 1px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 10px;
+      outline: none;
+      font-size: 14px;
+    }
+
+    input {
+      background: #111;
+      color: #00ff88;
+      border: 1px solid rgba(0, 255, 136, 0.3);
+    }
+
+    select {
+      background: #111;
+      color: #00ff88;
+      border: 1px solid rgba(0, 255, 136, 0.3);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      margin-top: 15px;
+      border: none;
+      border-radius: 10px;
+      background: #00ff88;
+      color: #000;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #00cc6a;
+      transform: scale(1.03);
+    }
+
+    #status {
+      margin-top: 15px;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+    .nametag{
+      font-size: 14px;
+      color: gray;
+      position: absolute;
+      bottom: 30px;
+    }
+
+    /* mobile fix */
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 20px;
+      }
+
+      .container {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+    <h1>🎬 YouTube Downloader</h1>
+
+    <input id="url" placeholder="Paste YouTube link">
+
+    <select id="type">
+      <option value="mp4">Video (MP4)</option>
+      <option value="mp3">Audio (MP3)</option>
+    </select>
+
+    <button onclick="download()">Download</button>
+
+    <p id="status"></p>
+  </div>
+
+  <div class="nametag">Made by Wenxyz</div>
+
+  <script>
+    async function download() {
+      const url = document.getElementById("url").value;
+      const type = document.getElementById("type").value;
+
+      document.getElementById("status").innerText =
+        "Downloading... please wait ⏳";
+
+      try {
+        const res = await fetch("http://localhost:3000/download", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url, type })
+        });
+
+        const data = await res.json();
+
+        document.getElementById("status").innerText =
+          data.success
+            ? "Download complete! Check server folder 📁"
+            : data.error;
+
+      } catch (err) {
+        document.getElementById("status").innerText =
+          "Server not responding ❌";
+      }
+    }
+  </script>
+
+</body>
+</html>
