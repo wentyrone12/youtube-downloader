@@ -128,44 +128,47 @@
   <div class="nametag">Made by Wenxyz</div>
 
   <script>
-    import path from "path";
-import fs from "fs";
+    async function download() {
+      const url = document.getElementById("url").value;
+      const type = document.getElementById("type").value;
 
-app.post("/download", async (req, res) => {
-    const { url, type } = req.body;
+      document.getElementById("status").innerText =
+        "Processing... please wait ⏳";
 
-    try {
-        const filePath = `downloads/output.${type}`;
+      try {
+        const res = await fetch("/download", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ url, type })
+        });
 
-        let options = {
-            output: filePath
-        };
-
-        if (type === "mp3") {
-            options.extractAudio = true;
-            options.audioFormat = "mp3";
-        } else {
-            options.format = "best";
+        if (!res.ok) {
+          throw new Error("Download failed");
         }
 
-        await ytdlp(url, options);
+        // 🔥 CONVERT TO FILE
+        const blob = await res.blob();
 
-        // 🔥 SEND FILE BACK
-        res.download(filePath, (err) => {
-            if (err) {
-                console.log(err);
-            }
+        // 🔥 CREATE DOWNLOAD LINK
+        const downloadUrl = window.URL.createObjectURL(blob);
 
-            // optional delete after download
-            fs.unlinkSync(filePath);
-        });
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = "video." + type;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
 
-    } catch (err) {
-        res.status(500).json({
-            error: "Download failed"
-        });
+        document.getElementById("status").innerText =
+          "Download started ✔";
+
+      } catch (err) {
+        document.getElementById("status").innerText =
+          "Error downloading ❌";
+      }
     }
-});
   </script>
 
 </body>
