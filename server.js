@@ -22,12 +22,14 @@ app.post("/download", async (req, res) => {
     const { url, type } = req.body;
 
     if (!url) {
-        return res.json({ success: false, error: "No URL provided" });
+        return res.status(400).json({ error: "No URL provided" });
     }
 
     try {
+        const filePath = `downloads/output.${type}`;
+
         let options = {
-            output: `${downloadFolder}/%(title)s.%(ext)s`
+            output: filePath
         };
 
         if (type === "mp3") {
@@ -39,17 +41,16 @@ app.post("/download", async (req, res) => {
 
         await ytdlp(url, options);
 
-        res.json({
-            success: true,
-            message: "Download complete!"
+        // 🔥 SEND FILE TO USER (DOWNLOAD SA PHONE)
+        res.download(filePath, (err) => {
+            if (err) {
+                console.log(err);
+            }
         });
 
     } catch (err) {
         console.log(err);
-        res.json({
-            success: false,
-            error: "Download failed"
-        });
+        res.status(500).json({ error: "Download failed" });
     }
 });
 
