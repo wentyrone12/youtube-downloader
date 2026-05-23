@@ -42,7 +42,16 @@ app.post("/download", async (req, res) => {
             options.format = "best";
         }
 
-        await ytdlp(url, options);
+        await ytdlp(url, {
+            ...options,
+            noCheckCertificates: true,
+            noWarnings: true,
+            preferFreeFormats: true,
+            addHeader: [
+                "referer:youtube.com",
+                "user-agent:googlebot"
+            ]
+        });
 
         // ✅ SEND FILE TO USER (IMPORTANT)
         res.download(filePath, (err) => {
